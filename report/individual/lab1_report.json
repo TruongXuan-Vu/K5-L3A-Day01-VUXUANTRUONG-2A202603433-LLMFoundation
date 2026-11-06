@@ -1,0 +1,127 @@
+{
+ "seed": 1072,
+ "predictions": {
+  "ml_f1": {
+   "text": "F1 ~0.9, precision cao hơn recall vì từ spam rất đặc trưng nên ít chặn nhầm, nhưng dữ liệu lệch và ngưỡng 0.5 khiến một số spam lọt lưới.",
+   "time": "14:19:24"
+  },
+  "ml_lr": {
+   "text": "lr=0.001 thì loss giảm rất chậm, gần như phẳng quanh 0.69 sau 300 epoch vì bước cập nhật quá nhỏ; lr=50 thì loss dao động mạnh, nhảy lên xuống và không hội tụ vì bước quá lớn nên vượt qua đáy.",
+   "time": "14:19:34"
+  },
+  "dl_curve": {
+   "text": "(1) Val loss giảm nhanh vài epoch đầu rồi chạm đáy và tăng lại, vì MLP có ~128k tham số mà chỉ ~4-5k tin nên dễ học thuộc Train. Train loss thì giảm mãi. (2) MLP chỉ ngang logistic regression về F1 (chênh vài phần trăm), không hơn rõ rệt.",
+   "time": "14:20:26"
+  },
+  "dl_relu": {
+   "text": "Bỏ ReLU thì hai lớp Linear gộp lại thành một phép tuyến tính duy nhất, tương đương logistic regression. F1 sẽ xấp xỉ F1 của Phần 1, không hơn MLP có ReLU hoặc kém đi một chút.",
+   "time": "14:20:37"
+  },
+  "emb_search": {
+   "text": "Kết quả gần nhất là spam. Query không có free/win/prize nhưng 'selected', 'complimentary', 'reply now to claim' cùng nghĩa với tin trúng thưởng, nên embedding đặt gần nhau. BoW chỉ khớp được vài từ chung chung như you, to, now.",
+   "time": "14:23:53"
+  },
+  "emb_tricky": {
+   "text": "Encoder+LogReg đoán đúng nhiều hơn BoW. BoW nhìn từ khóa: 'free', 'won', 'call' xuất hiện trong tin ham nên dễ báo nhầm spam, còn 'complimentary', 'chosen', 'at no cost', 'rewards expire' là spam không có từ khóa quen nên BoW bỏ lọt. Embedding hiểu ngữ cảnh/nghĩa nên phân biệt tốt hơn. Dự kiến BoW ~3/6, Enc+LR ~5-6/6.",
+   "time": "14:25:00"
+  }
+ },
+ "checks": {
+  "1.1 vectorize": true,
+  "1.2 sigmoid / predict_proba": true,
+  "1.3 train_logreg": true,
+  "1.4 metrics": true,
+  "2.1 build_mlp": true,
+  "2.2 train_mlp": true,
+  "3.1–3.2 cosine / top_k_similar": true,
+  "3.3 knn_predict": true
+ },
+ "experiments": [
+  {
+   "key": "ml_f1",
+   "time": "14:19:24"
+  },
+  {
+   "key": "ml_lr",
+   "time": "14:19:34"
+  },
+  {
+   "key": "dl_curve",
+   "time": "14:20:26"
+  },
+  {
+   "key": "dl_relu",
+   "time": "14:20:37"
+  },
+  {
+   "key": "emb_search",
+   "time": "14:23:53"
+  },
+  {
+   "key": "emb_tricky",
+   "time": "14:25:00"
+  }
+ ],
+ "results": {
+  "1. BoW + LogReg (tự code)": {
+   "accuracy": 0.9741935483870968,
+   "precision": 0.9864864864864865,
+   "recall": 0.7934782608695652,
+   "f1": 0.8795180722891566,
+   "f1_SUB": 0.8571428571428571,
+   "train_s": 8.248989921999964,
+   "msg_per_s": 13058.815354152015,
+   "p50_ms": 0.0892744998282069,
+   "p95_ms": 0.402539299921034,
+   "usd_per_1k": 0.0
+  },
+  "2. BoW + MLP (deep learning)": {
+   "accuracy": 0.9858064516129033,
+   "precision": 0.9550561797752809,
+   "recall": 0.9239130434782609,
+   "f1": 0.9392265193370166,
+   "f1_SUB": 0.9743589743589743,
+   "train_s": 10.411933455999815,
+   "msg_per_s": 9189.390903938727,
+   "p50_ms": 0.3430579999985639,
+   "p95_ms": 4.518364150169418,
+   "usd_per_1k": 0.0
+  },
+  "3a. Encoder (MiniLM) + kNN": {
+   "accuracy": 0.9716129032258064,
+   "precision": 0.8431372549019608,
+   "recall": 0.9347826086956522,
+   "f1": 0.8865979381443299,
+   "f1_SUB": 0.9500000000000001,
+   "train_s": 112.74026439600016,
+   "msg_per_s": 31.145299397083004,
+   "p50_ms": 64.88926099996206,
+   "p95_ms": 136.88072775005367,
+   "usd_per_1k": 0.0
+  },
+  "3b. Encoder (MiniLM) + LogReg": {
+   "accuracy": 0.9896774193548387,
+   "precision": 0.9565217391304348,
+   "recall": 0.9565217391304348,
+   "f1": 0.9565217391304348,
+   "f1_SUB": 0.9500000000000001,
+   "train_s": 113.2151144840002,
+   "msg_per_s": 45.80970673793682,
+   "p50_ms": 28.808700500007944,
+   "p95_ms": 41.727099150148206,
+   "usd_per_1k": 0.0
+  },
+  "3c. Encoder (MiniLM) + MLP head": {
+   "accuracy": 0.983225806451613,
+   "precision": 0.9340659340659341,
+   "recall": 0.9239130434782609,
+   "f1": 0.9289617486338797,
+   "f1_SUB": 0.9743589743589743,
+   "train_s": 113.77919369100027,
+   "msg_per_s": 45.593778620588445,
+   "p50_ms": 43.82865299999139,
+   "p95_ms": 62.51742084998567,
+   "usd_per_1k": 0.0
+  }
+ }
+}
